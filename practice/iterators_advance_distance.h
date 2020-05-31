@@ -74,8 +74,15 @@ void advance_impl (Iterator& it, int n, std::random_access_iterator_tag)
 template<typename Iterator>
 void advance_impl (Iterator& it, int n, std::bidirectional_iterator_tag)
 {
-    for (size_t i = 0; i < n; i++)
+    while (n > 0) {
+        --n;
         ++it;
+    }
+    
+    while (n < 0) {
+        ++n;
+        --it;
+    }
 }
 
 
