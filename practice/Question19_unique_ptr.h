@@ -86,7 +86,7 @@ public:
 template<typename TypeValue, typename... Args>
 unique_ptr<TypeValue> make_unique (Args&&... args)
 {
-    return unique_ptr<TypeValue> (new TypeValue (std::forward (args)...) );
+    return unique_ptr<TypeValue> (new TypeValue (std::forward<Args> (args)...) );
 }
 
 
