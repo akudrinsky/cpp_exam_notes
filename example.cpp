@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <iostream>
+#include <span>
 
 class MyInt {
 public:
@@ -14,4 +15,5 @@ int main() {
         std::cout << i << '\n';
     }
     while (i < 5);
+    std::span<int> a;
 }

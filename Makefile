@@ -14,7 +14,7 @@ TARGET= main
 
 # ENV MSG
 # default commit message
-MSG= 'akudrinsky autocommit'
+MSG= 'starting optional'
 
 # TARGET ALL
 # build all example files
