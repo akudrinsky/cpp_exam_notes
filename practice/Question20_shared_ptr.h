@@ -4,33 +4,44 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <utility>
 
 template<typename TypeValue>
-class shared_ptr
+class shared_ptr;
+
+#pragma pack (push, 1)
+template<typename TypeValue>
+class shared_ptr_base
 {
-
-private:
+protected:
+    int*       counter;
     TypeValue* pointer;
-    long*    counter;
-
+    bool       init_type = false;
 public:
 
-    constexpr shared_ptr ():
+    shared_ptr_base ():
         pointer (nullptr),
-        counter (new long(1))
+        counter (new int(1))
     { }
 
-    explicit shared_ptr (TypeValue* pointer):
+
+    shared_ptr_base (TypeValue* pointer, int* counter):
+        pointer   (pointer),
+        counter   (counter),
+        init_type (true)
+    { (*counter) = 1; }
+
+    explicit shared_ptr_base (TypeValue* pointer):
         pointer (pointer),
-        counter (new long(1))
+        counter (new int(1))
     { }
 
-    shared_ptr (const shared_ptr& init):
-        pointer (init.pointer),
-        counter (init.counter)
+    shared_ptr_base (const shared_ptr_base& init):
+            pointer (init.pointer),
+            counter (init.counter)
     { (*counter)++; }
 
-    shared_ptr& operator= (const shared_ptr& init)
+    shared_ptr_base& operator= (const shared_ptr_base& init)
     {
         pointer = init.pointer;
         counter = init.counter;
@@ -39,7 +50,7 @@ public:
     }
 
 
-    shared_ptr (shared_ptr&& init) noexcept:
+    shared_ptr_base (shared_ptr_base&& init) noexcept:
         pointer (init.pointer),
         counter (init.counter)
     { init.pointer = init.counter = nullptr; }
@@ -52,13 +63,22 @@ public:
 
             if (*counter == 0)
             {
-                delete pointer;
-                delete counter;
+
+                if (init_type == false)
+                {
+                    delete pointer;
+                    delete counter;
+                }
+                else
+                {
+                    delete [] reinterpret_cast<char*> (counter);
+                }
+
             }
         }
     }
 
-    shared_ptr& operator= (shared_ptr&& init) noexcept
+    shared_ptr_base& operator= (shared_ptr_base&& init) noexcept
     {
         destruct ();
 
@@ -69,22 +89,11 @@ public:
         return *this;
     }
 
-    ~shared_ptr ()
+    ~shared_ptr_base ()
     { destruct (); }
 
-    void swap (shared_ptr& other)
-    {
-        std::swap (pointer, other.pointer);
-        std::swap (counter, other.counter);
-    }
-
     void reset () noexcept
-    { shared_ptr().swap (*this);     }
-
-    void reset (shared_ptr other)
-    { shared_ptr(other).swap (*this); }
-
-
+    { shared_ptr_base().swap (*this);}
 
     TypeValue* get       () const noexcept
     { return pointer;  }
@@ -95,9 +104,54 @@ public:
     TypeValue* operator->() const noexcept
     { return get ();   }
 
-    long use_count ()     const noexcept
+    int use_count ()     const noexcept
     { return *counter; }
+
+
+
 };
+#pragma pack (pop)
+
+template<typename TypeValue>
+class shared_ptr: public shared_ptr_base<TypeValue>
+{
+
+    template<typename Type, typename... Args>
+    friend shared_ptr<Type> make_shared (Args&&... args);
+
+private:
+
+    shared_ptr (TypeValue* pointer, int* counter):
+            shared_ptr_base<TypeValue> (pointer, counter)
+    { }
+
+public:
+    explicit shared_ptr (TypeValue* pointer):
+        shared_ptr_base<TypeValue> (pointer)
+    { }
+
+    void swap (shared_ptr& other)
+    {
+        std::swap (this->pointer, other.pointer);
+        std::swap (this->counter, other.counter);
+    }
+
+    template<typename Other>
+    void reset (Other* other)
+    { shared_ptr(other).swap (*this); }
+
+
+
+};
+
+template<typename TypeValue, typename... Args>
+shared_ptr<TypeValue> make_shared (Args&&... args)
+{
+    char* emplace = new char[sizeof (int) + sizeof (TypeValue)];
+    new (emplace + sizeof (int)) TypeValue (std::forward<Args> (args)...);
+
+    return shared_ptr<TypeValue> (reinterpret_cast<TypeValue*> (emplace + sizeof (int)), reinterpret_cast<int*> (emplace) );
+}
 
 
 #endif //UNTITLED1_SHARED_PTR_H
