@@ -20,6 +20,14 @@
  *
 */
 
+
+/* В файле встречаются выкладки из "stl_iterators.h", одна из них, и самая
+ * на мой взгляд разная, что для (вроде)всех функций вне структуры
+ * нужны две версии, одна с одним типом итераторов, другая с двумя.
+ * (строка 102) сразу после класса
+*/
+
+
 template<typename TypeValue>
 class normal_iterator
 {
@@ -30,12 +38,15 @@ private:
     using it_traits = std::iterator_traits<TypeValue*>;
 public:
 
+//  needs for some functions work
     typedef typename it_traits::iterator_category iterator_category;
     typedef typename it_traits::value_type  	  value_type;
     typedef typename it_traits::difference_type   difference_type;
     typedef typename it_traits::reference 	      reference;
     typedef typename it_traits::pointer   	      pointer;
-
+//
+    
+    
     explicit normal_iterator (TypeValue* init):
             iterator (init)
     { }
