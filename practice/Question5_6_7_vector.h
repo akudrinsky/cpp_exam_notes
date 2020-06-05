@@ -5,7 +5,10 @@
 #include <stdexcept>
 #include <utility>
 #include <bitset>
+#include "normal_iterator(random_access).h"
 
+template<typename TypeValue>
+class normal_iterator;
 
 template<typename TypeValue, typename Allocator = std::allocator<TypeValue>>
 class vector
@@ -13,7 +16,7 @@ class vector
 private:
 
     TypeValue* start;
-    TypeValue* end;
+    TypeValue* end_;
     TypeValue* storage;
     Allocator  allocator;
 
@@ -25,7 +28,7 @@ public:
 
     vector (const Allocator& alloc = Allocator() ):
             start     (std::allocator_traits<Allocator>::allocate (allocator, BASE_SIZE) ),
-            end       (start + 1),
+            end_       (start + 1),
             storage   (start + BASE_SIZE),
             allocator (alloc)
     { };
@@ -35,13 +38,13 @@ public:
     // Rule of three
     vector (const vector& init):                                // Copy constructor
             start     (std::allocator_traits<Allocator>::allocate (allocator, init.storage - init.start)),  // Аллоцирует (init.storage - init.start) * sizeof(TypeValue) байт памяти
-            end       (start + (init.end - init.start) ),
+            end_       (start + (init.end_ - init.start) ),
             storage   (start + (init.storage - init.start)),
             allocator (std::allocator_traits<Allocator>::select_on_container_copy_construction (init.allocator))
     // Copy constructors of AllocatorAwareContainers obtain their instances of the allocator
     // by calling std::allocator_traits<allocator_type>::select_on_container_copy_construction on the allocator of the container being copied.
     {
-        for (size_t i = 0; i < init.end - init.start; i++)
+        for (size_t i = 0; i < init.end_ - init.start; i++)
         {
             // Конструирует объекты типа TypeValue на выделенной памяти
             std::allocator_traits<Allocator>::construct (allocator, start + i, *(init.start + i));
@@ -55,7 +58,7 @@ public:
             return *this;
         }
 
-        for (size_t i = 0; i < end - start; i++)
+        for (size_t i = 0; i < end_ - start; i++)
         {
             // Деконструирует объекты типа NypeValue на занятой памяти, вызывая allocator.destroy,
             // если не получается, то (start + i)->~TypeValue
@@ -85,15 +88,15 @@ public:
         if (realloc_required)
         {
             // Allocate memory
-            start   = std::allocator_traits<Allocator>::allocate (allocator, init.end - init.start);
-            storage = start + (init.end - init.start);
+            start   = std::allocator_traits<Allocator>::allocate (allocator, init.end_ - init.start);
+            storage = start + (init.end_ - init.start);
         }
 
-        end = start + (init.end - init.start);
+        end_ = start + (init.end_ - init.start);
 
 
 
-        for (size_t i = 0; i < init.end - init.start; i++)
+        for (size_t i = 0; i < init.end_ - init.start; i++)
         {
             // Конструирует объекты типа TypeValue на выделенной памяти
             std::allocator_traits<Allocator>::construct (allocator, start + i, *(init.start + i));
@@ -104,7 +107,7 @@ public:
 
     void destruct ()
     {
-        for (size_t i = 0; i < end - start; i++)
+        for (size_t i = 0; i < end_ - start; i++)
         {
             // Деконструирует объекты типа NypeValue на занятой памяти, вызывая allocator.destroy,
             // если не получается, то (start + i)->~TypeValue
@@ -119,11 +122,11 @@ public:
 
     vector (vector&& init):                                     // Move constructor
             start     (init.start),
-            end       (init.end),
+            end_       (init.end_),
             storage   (init.storage),
             allocator (std::move (init.allocator))
     {
-        init.storage = init.start = init.end = nullptr;
+        init.storage = init.start = init.end_ = nullptr;
     }
 
     vector& operator= (vector&& init)                           // Move assignment operator
@@ -138,7 +141,7 @@ public:
         // Move-assignment will replace the allocator only if std::allocator_traits<allocator_type>::propagate_on_container_move_assignment::value is true
         if (allocator != init.allocator &&  allocator_move_required == false)
         {
-            for (size_t i = 0; i < end - start; i++)
+            for (size_t i = 0; i < end_ - start; i++)
             {
                 // Деконструирует объекты типа NypeValue на занятой памяти, вызывая allocator.destroy,
                 // если не получается, то (start + i)->~TypeValue
@@ -152,8 +155,8 @@ public:
                 storage = start + (init.storage - init.start);
             }
 
-            end = start + (init.end - init.start);
-            for (size_t i = 0; i < end - start; i++)
+            end_ = start + (init.end_ - init.start);
+            for (size_t i = 0; i < end_ - start; i++)
             {
                 std::allocator_traits<Allocator>::construct (allocator, start + i, *(init.start + i) );
             }
@@ -171,9 +174,9 @@ public:
 
             start   = init.start;
             storage = init.storage;
-            end     = init.end;
+            end_     = init.end_;
 
-            init.storage = init.start = init.end = nullptr;
+            init.storage = init.start = init.end_ = nullptr;
         }
 
         return *this;
@@ -182,7 +185,7 @@ public:
 
     TypeValue& at (size_t index)
     {
-        if (index > end - start)
+        if (index > end_ - start)
             throw std::out_of_range("index > number of elemnts in vector");
 
         return *(start + index);
@@ -190,7 +193,7 @@ public:
 
     const TypeValue& at (size_t index) const
     {
-        if (index > end - start)
+        if (index > end_ - start)
             throw std::out_of_range("index > number of elemnts in vector");
 
         return *(start + index);
@@ -209,10 +212,10 @@ public:
     { return *start; }
 
     TypeValue& back ()
-    { return *(end - 1); }
+    { return *(end_ - 1); }
 
     const TypeValue& back () const
-    { return *(end - 1); }
+    { return *(end_ - 1); }
 
     constexpr TypeValue* data () noexcept
     { return start; }
@@ -221,10 +224,10 @@ public:
     { return start; }
 
     bool empty () const
-    { return start == end - 1; }
+    { return start == end_ - 1; }
 
     size_t size () const
-    { return end - start - 1; }
+    { return end_ - start - 1; }
 
     size_t capacity () const
     { return storage - start; }
@@ -236,9 +239,9 @@ private:
         size_t new_size      = 2*(storage - start);
         TypeValue* new_start = std::allocator_traits<Allocator>::allocate (allocator, new_size);
 
-        std::allocator_traits<Allocator>::construct (allocator, new_start + (end - start - 1), std::forward<Arguments> (arguments)... );
+        std::allocator_traits<Allocator>::construct (allocator, new_start + (end_ - start - 1), std::forward<Arguments> (arguments)... );
 
-        for (size_t i = 0; i < end - start - 1; i++)
+        for (size_t i = 0; i < end_ - start - 1; i++)
         {
             std::allocator_traits<Allocator>::construct (allocator, new_start + i, *(start + i) );
         }
@@ -251,7 +254,7 @@ private:
         destruct ();
 
         start   = new_start;
-        end     = start + new_size / 2 + 1;
+        end_     = start + new_size / 2 + 1;
         storage = start + new_size;
     }
 
@@ -259,28 +262,28 @@ public:
 
     void push_back (const TypeValue& init)
     {
-        if (end == storage)
+        if (end_ == storage)
         {
             realloc_insert (init);
             return;
         }
 
-        std::allocator_traits<Allocator>::construct (allocator, end - 1, init);
-        end++;
+        std::allocator_traits<Allocator>::construct (allocator, end_ - 1, init);
+        end_++;
     }
 
     template<typename... Arguments>
     TypeValue& emplace_back (Arguments... arguments)
     {
-        if (end == storage)
+        if (end_ == storage)
         {
             realloc_insert (std::forward<Arguments> (arguments)... );
 
         }
         else
         {
-            std::allocator_traits<Allocator>::construct (allocator, end - 1, std::forward<Arguments> (arguments)...);
-            end++;
+            std::allocator_traits<Allocator>::construct (allocator, end_ - 1, std::forward<Arguments> (arguments)...);
+            end_++;
         }
 
         return back ();
@@ -288,30 +291,43 @@ public:
 
     void push_back (TypeValue&& init)
     {
-        if (end == storage)
+        if (end_ == storage)
         {
             realloc_insert (std::move_if_noexcept (init) );
             return;
         }
 
-        std::allocator_traits<Allocator>::construct (allocator, end - 1, init);
-        end++;
+        std::allocator_traits<Allocator>::construct (allocator, end_ - 1, init);
+        end_++;
     }
 
     void pop_back ()
-    { std::allocator_traits<Allocator>::destroy (--end - 1); };
+    { std::allocator_traits<Allocator>::destroy (--end_ - 1); };
 
     void dump ()
     {
         std::cout << "Size     = " << size () << "\n";
         std::cout << "Capacity = " << capacity () << "\n";
         std::cout << "Empty    = " << empty () << "\n";
-        for (TypeValue* i = start; i < end - 1; i++)
+        for (TypeValue* i = start; i < end_ - 1; i++)
         {
             std::cout << *i << " ";
         }
         std::cout << "\n";
     }
+
+
+    normal_iterator<TypeValue> begin ()
+    { return normal_iterator (start); }
+
+    const normal_iterator<TypeValue> begin () const
+    { return normal_iterator (start); }
+
+    normal_iterator<TypeValue> end ()
+    { return normal_iterator (end_ - 1); }
+
+    const normal_iterator<TypeValue> end () const
+    { return normal_iterator (end_ - 1); }
 
 };
 
@@ -338,7 +354,7 @@ private:
         { }
 
         bool bit ()
-        { return (*cur_pointer >> cur_elem) & 0x01; }
+        { return (*cur_pointer >> cur_elem) & 0x1; }
 
         static void set_bit (proxy_type* cur_pointer, size_t cur_elem, bool condition)
         {
@@ -383,7 +399,7 @@ public:
         void push_back (bool init)
         {
         // Тут должна быть проверка на size == capacity, аналогично vectror выше
-            
+
             BoolProxy::set_bit (start + (elements / SIZE_OF_ARRAY_ELEMENT), elements % SIZE_OF_ARRAY_ELEMENT, init);
             elements++;
         }
