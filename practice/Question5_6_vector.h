@@ -4,8 +4,7 @@
 
 #include <stdexcept>
 #include <utility>
-
-
+#include <bitset>
 
 
 template<typename TypeValue, typename Allocator = std::allocator<TypeValue>>
@@ -18,12 +17,16 @@ private:
     TypeValue* storage;
     Allocator  allocator;
 
+    enum vector_const {
+        BASE_SIZE = 8,
+    };
+
 public:
 
     vector (const Allocator& alloc = Allocator() ):
-            start     (std::allocator_traits<Allocator>::allocate (allocator, 8) ),
+            start     (std::allocator_traits<Allocator>::allocate (allocator, BASE_SIZE) ),
             end       (start + 1),
-            storage   (start + 8),
+            storage   (start + BASE_SIZE),
             allocator (alloc)
     { };
 
@@ -313,6 +316,100 @@ public:
 };
 
 
+template<>
+class vector<bool>
+{
+private:
+    using proxy_type = unsigned long;
+
+    proxy_type* start;
+    size_t      elements;
+    size_t      storage;
+
+    struct BoolProxy
+    {
+        proxy_type* cur_pointer;
+        size_t      cur_elem;
+
+        BoolProxy () = delete;
+        explicit BoolProxy (proxy_type* init_pointer, size_t init_elem):
+            cur_pointer (init_pointer),
+            cur_elem    (init_elem)
+        { }
+
+        bool bit ()
+        { return (*cur_pointer >> cur_elem) & 0x01; }
+
+        static void set_bit (proxy_type* cur_pointer, size_t cur_elem, bool condition)
+        {
+            if (condition == true)
+            {
+                (*cur_pointer) |= (0x01 << cur_elem);
+            }
+            else
+            {
+                (*cur_pointer) &= ~(0x01 << cur_elem);
+            }
+        }
+
+        void set_bit (bool condition)
+        { set_bit (cur_pointer, cur_elem, condition); }
+
+        BoolProxy& operator= (bool init)
+        {
+            set_bit (init);
+            return *this;
+        }
+
+        operator bool ()
+        { return bit (); }
+    };
+
+    enum bvector_const {
+        BASE_SIZE             = 20,
+        SIZE_OF_ARRAY_ELEMENT = sizeof (proxy_type),
+    };
+
+public:
+
+    vector ():
+        start    (new proxy_type[BASE_SIZE]),    // я хз как тут реализовывать аллокаторы, в стандарте творится поный magic
+        elements (0),
+        storage  (BASE_SIZE)
+    {}
+
+
+    // Push back реализован только для тестов и отладки
+        void push_back (bool init)
+        {
+        // Тут должна быть проверка на size == capacity, аналогично vectror выше
+            
+            BoolProxy::set_bit (start + (elements / SIZE_OF_ARRAY_ELEMENT), elements % SIZE_OF_ARRAY_ELEMENT, init);
+            elements++;
+        }
+    //
+
+
+    BoolProxy operator[] (size_t index)
+    {
+        return BoolProxy (start + (index / SIZE_OF_ARRAY_ELEMENT), index % SIZE_OF_ARRAY_ELEMENT);
+    }
+
+
+
+#include <bitset>
+    void dump ()
+    {
+        std::cout << "size0f(proxy_type) = " << sizeof (proxy_type) << " ELEMENTS     = " << elements << "\n";
+        for (size_t i = 0; i < elements / SIZE_OF_ARRAY_ELEMENT +  (elements % SIZE_OF_ARRAY_ELEMENT == 0 ? 0 : 1); i++)
+        { std::cout << std::bitset<SIZE_OF_ARRAY_ELEMENT> (*(start + i)) << " "; }
+        std::cout << "\n";
+    }
+
+
+
+
+};
 
 
 #endif // MY_VEC
