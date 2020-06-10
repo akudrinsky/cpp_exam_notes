@@ -35,7 +35,7 @@ public:
         value       = data;
     }
     
-    // to add: convert-copy constructor and maybe more
+    // to do: convert-copy constructor and maybe more
     
     ~optional () {
         is_correct = false;
@@ -51,7 +51,7 @@ public:
         
     }
     
-    // to add: convert - assignment and maybe more
+    // to do: convert - assignment and maybe more
     
     /* Getters. Do not check 'is_correct', as in std */
     
@@ -100,7 +100,7 @@ public:
         }
     }
     
-    // to add: value_or
+    // to do: value_or
     
     /* Modifiers. */
     
@@ -123,6 +123,6 @@ public:
         }
     }
     
-    // to add: emplace
+    // to do: emplace
 };
 
