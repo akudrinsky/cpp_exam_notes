@@ -3,3 +3,5 @@
 # ignore binaries
 bin
 *.out
+
+.vscode/
