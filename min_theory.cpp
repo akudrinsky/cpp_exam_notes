@@ -130,3 +130,10 @@ x[11] = 0;
 // Ссылка на временный объект может продлить время его жизни (вообще, стоит плотнее заняться этим вопросом)
 
 // Question 7
+// Сделайте, если кому нужно
+
+// Question 8
+const int a = 0;
+const int* a = new int[10]; // pointer to const ints
+int* const a = new int[10]; // const pointer to ints
+
