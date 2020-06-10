@@ -1,19 +1,12 @@
-#include <cstdio>
-#include <iostream>
-#include <span>
+#include<iostream>
+using namespace std;
 
-class MyInt {
-public:
-    int number = 1;
-private:
-    int a = 2;
-};
+int& fun () {
+    int a = 02;
+    return a;
+}
 
-int main() {
-    MyInt i = 0;
-    do {
-        std::cout << i << '\n';
-    }
-    while (i < 5);
-    std::span<int> a;
+int main () {
+    int a = fun ();
+    std::cout << a;
 }
