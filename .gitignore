@@ -5,3 +5,7 @@ bin
 *.out
 
 .vscode/
+
+*.log
+
+strace_out

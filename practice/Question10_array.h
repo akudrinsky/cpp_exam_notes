@@ -27,7 +27,7 @@ template <typename _Tp>
 struct __array_traits<_Tp, 0> {
     struct _Type {};  // Stub for empty array
 
-    static constexpr _Tp &getReference(const _Type &, std::size) noexcept {
+    static constexpr _Tp &getReference(const _Type &, std::size_t) noexcept {
         return *const_cast<_Tp &>(nullptr);
     }
 
@@ -47,7 +47,7 @@ class array {
     typedef std::size_t size_type;
     typedef std::ptrdiff_t difference_type;
 
-    typedef __array_traits<_Tp, _Nm>::_Type array_type;
+    typedef typename __array_traits<_Tp, _Nm>::_Type array_type;
 
     array_type arr; // Array itself
 
@@ -56,7 +56,7 @@ class array {
 
     // Note that since array is allocated on the stack, it is possible to do many
     // calculations in compile time
-
+public:
     // Element access methods
     constexpr reference at(size_type pos) {
         // Since C++17 at() should be implemented as constexpr
@@ -78,44 +78,44 @@ class array {
 
     constexpr reference operator[](size_type pos) {
         // Since C++17 operator[] should be constexpr
-        return __array_traits::getReference(arr, pos);
+        return __array_traits<_Tp, _Nm>::getReference(arr, pos);
     }
 
     constexpr const_reference operator[](size_type pos) const {
         // Constant version of operator[]
-        return __array_traits::getReference(arr, pos);
+        return __array_traits<_Tp, _Nm>::getReference(arr, pos);
     }
 
     // Note that calling front() and back() on an empty container is considered UB
 
     constexpr reference front() {
         // Access the first element
-        return __array_traits::getReference(arr, 0);
+        return __array_traits<_Tp, _Nm>::getReference(arr, 0);
     }
 
     constexpr const_reference front() const {
         // Constant version of front()
-        return __array_traits::getReference(arr, 0);
+        return __array_traits<_Tp, _Nm>::getReference(arr, 0);
     }
 
     constexpr reference back() {
         // Access the last element
-        return __array_traits::getReference(arr, _Nm - 1);
+        return __array_traits<_Tp, _Nm>::getReference(arr, _Nm - 1);
     }
 
     constexpr const_reference back() const {
         // Constant version of back()
-        return __array_traits::getReference(arr, _Nm - 1);
+        return __array_traits<_Tp, _Nm>::getReference(arr, _Nm - 1);
     }
 
     constexpr pointer data() noexcept {
         // Direct access to underlying array
-        return __array_traits::getPointer(arr);
+        return __array_traits<_Tp, _Nm>::getPointer(arr);
     }
 
     constexpr const_pointer data() const noexcept {
         // Const version of data()
-        return __array_traits::getPointer(arr);
+        return __array_traits<_Tp, _Nm>::getPointer(arr);
     }
 
     // Capacity methods
@@ -138,14 +138,14 @@ class array {
     void fill(const_reference value) {
         // Fill an array. Since C++20 should be constexpr.
         for (int i = 0; i < _Nm; i++) {
-            __array_traits::getReference(arr, i) = value;  // Everything is nice since it
+            __array_traits<_Tp, _Nm>::getReference(arr, i) = value;  // Everything is nice since it
         }
     }
 
-    void swap(array &other) noexcept(std::is_nothrow_swappable(value_type)) {
+    void swap(array &other) noexcept(std::is_nothrow_swappable<value_type>()) {
         // Requires custom swap specification
         for (int i = 0; i < _Nm; i++) {
-            std::swap(__array_traits::getReference(arr, i), __array_traits::getReference(other.arr, i));
+            std::swap(__array_traits<_Tp, _Nm>::getReference(arr, i), __array_traits<_Tp, _Nm>::getReference(other.arr, i));
             // Just swap elementwise, I guess (solution in GCC implementation relies on iterators)
         }
     }
