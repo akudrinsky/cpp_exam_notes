@@ -1,11 +1,9 @@
 #ifndef Q10_ARRAY_H_
 #define Q10_ARRAY_H_
 
-#define STR(x) #x
-#define STRINGIFY(x) STR(x)
-
 #include <cstddef>
 #include <exception>
+#include <stdexcept>
 #include <type_traits>
 
 // TODO encapsulate array itself and allow for empty container to be created
@@ -49,18 +47,18 @@ class array {
 
     typedef typename __array_traits<_Tp, _Nm>::_Type array_type;
 
-    array_type arr; // Array itself
+    array_type arr;  // Array itself
 
     // Constructor, destructor and operator= are implicitly declared for
     // std::array
 
     // Note that since array is allocated on the stack, it is possible to do many
     // calculations in compile time
-public:
+   public:
     // Element access methods
     constexpr reference at(size_type pos) {
         // Since C++17 at() should be implemented as constexpr
-        if (pos < size()) {
+        if (pos >= size()) {
             throw std::runtime_error("Address overflow in array::at() function");
         }
 
@@ -69,7 +67,7 @@ public:
 
     constexpr const_reference at(size_type pos) const {
         // Constant version of at()
-        if (pos < size()) {
+        if (pos >= size()) {
             throw std::runtime_error("Address overflow in array::at() function");
         }
 
@@ -137,18 +135,83 @@ public:
     // Operations
     void fill(const_reference value) {
         // Fill an array. Since C++20 should be constexpr.
-        for (int i = 0; i < _Nm; i++) {
-            __array_traits<_Tp, _Nm>::getReference(arr, i) = value;  // Everything is nice since it
+        for (size_type i = 0; i < _Nm; i++) {
+            __array_traits<_Tp, _Nm>::getReference(arr, i) = value;  // Everything is nice since all values are initialized
         }
     }
 
     void swap(array &other) noexcept(std::is_nothrow_swappable<value_type>()) {
         // Requires custom swap specification
-        for (int i = 0; i < _Nm; i++) {
+        for (size_type i = 0; i < _Nm; i++) {
             std::swap(__array_traits<_Tp, _Nm>::getReference(arr, i), __array_traits<_Tp, _Nm>::getReference(other.arr, i));
             // Just swap elementwise, I guess (solution in GCC implementation relies on iterators)
         }
     }
 };
+
+// Some unit testing to ensure that everything works fine
+
+void question10_test() {
+    array<int, 0> empty_arr;  // Empty array
+    if (!empty_arr.empty()) {
+        throw std::runtime_error("At Question10: Empty array is considered non-empty");
+    }
+
+    if (empty_arr.data() != nullptr) {
+        throw std::runtime_error("At Question10: Non-nullptr pointer to empty array");
+    }
+
+    array<int, 10> arr1;
+    arr1.fill(44);
+
+    if (arr1.size() != 10)
+        throw std::runtime_error("At Question10: Invalid size");
+
+    if (arr1.max_size() != 10)
+        throw std::runtime_error("At Question10: Invalid max_size");
+
+    for (int i = 0; i < 10; i++) {
+        if (arr1[i] != 44 || arr1.at(i) != 44)
+            throw std::runtime_error("At Question10: Fill does not fill the whole array or access function works improperly");
+    }
+
+    bool flag = false;
+
+    try {
+        arr1.at(11);
+    } catch (const std::exception &e) {
+        flag = true;
+    }
+
+    if (!flag)
+        throw std::runtime_error("At Question10: at() did not detected array overflow");
+
+    array<int, 10> arr2;
+
+    for (int i = 0; i < 10; i += 2) {
+        arr2[i] = i;
+        arr2.at(i + 1) = i + 1;
+    }
+
+    for (int i = 0; i < 10; i++) {
+        if (arr2[i] != i || arr2.at(i) != i)
+            throw std::runtime_error("At Question10: Either at or operator[] are working improperly");
+    }
+
+    arr1.swap(arr2);
+
+    for (int i = 0; i < 10; i++) {
+        if (arr1[i] != i || arr1.at(i) != i)
+            throw std::runtime_error("At Question10: Swap works improperly");
+    }
+
+    if(arr1.front() != 0) {
+        throw std::runtime_error("At Question10: Front works improperly");
+    }
+
+    if(arr1.back() != 9) {
+        throw std::runtime_error("At Question10: Back works improperly");
+    }
+}
 
 #endif  // Q10_ARRAY_H_
