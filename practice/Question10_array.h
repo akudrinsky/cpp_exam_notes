@@ -6,7 +6,6 @@
 #include <stdexcept>
 #include <type_traits>
 
-// TODO encapsulate array itself and allow for empty container to be created
 
 template <typename _Tp, std::size_t _Nm>
 struct __array_traits {
