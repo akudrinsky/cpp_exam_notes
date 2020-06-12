@@ -432,3 +432,96 @@ void f(float);
 f(932); // Ошибка!
 
 // проверьте это кто нибудь
+
+
+// Question 23
+// https://docs.google.com/spreadsheets/d/10OtSa0QdUp0HyKJIySKQAp_1U6CDkdY8G3jnKMlePgE/edit?usp=sharing
+
+
+// Question 29
+// Мотивировка и грустные истории C++ 03
+// Хотим сделать функцию, которая сможет принимать временные объекты
+
+// возможные имплементации на примере std::vector
+int func(const std::vector<int>& v); // Нельзя будет менять объекты
+int func(      std::vector<int>& v); // Не скомпилируется, если передать временный объект
+int func(      std::vector<int>  v); // Будет копирование
+
+// Вывод: все три способа плохие
+// Рассмотрим стандартную реализацию swap
+template <typename T>
+void swap(T& x, T& y) {
+    T tmp = x;
+    x = y;
+    y = tmp;
+}
+// ПЛОХО! ПЛОХО! Очень много копирования
+
+// Решаем проблему копирования с помощью std::move
+template <class T>
+void swap(T& x, T& y) {
+    T tmp = std::move(x); // После действия move в x будет лежать мусор, он станет невалидным, но копирования не будет
+    x = std::move(y);
+    y = std::move(tmp);
+}
+// Есть информация, что move лежит в <utility>, но у меня и без инклюда работало
+// std::move преобразует аргумент в rvalue
+
+// move-constructor
+class C {
+    C(C &&x) {}; // Конструктор перемещения (&& - ссылка на временный объект типа C)
+
+// move-assignment оператор
+    C& operator= (C&& x) {};
+};
+// Расширяем "Правило трех" до "Правила пяти". Могут генерироваться по умолчанию как и остальные
+
+// Для string кажется, что должно быть так
+String {
+    char* str = nullptr;
+    int size = 0;
+
+    String(String&& string) noexcept :
+        str(string.str),
+        size(string.size) {
+
+        string.str = nullptr;
+    }
+
+    String& operator= (String&& string) noexcept {
+        if (&string == this)
+        return *this;
+
+        delete[] str;
+        str = string.str;
+        size = string.size;
+        string.str = nullptr;
+
+        return *this;
+    }
+};
+
+
+// Question 30
+// Мотивировка
+void func() {
+    int* p = new int;
+    g(); // Может бросить исключение, а значит p никто не очистит, будет утечка памяти. Беда
+    delete p;
+}
+
+// Решение:  ̶н̶а̶п̶и̶ш̶е̶м̶ ̶к̶у̶ч̶у̶ ̶к̶о̶с̶т̶ы̶л̶е̶й̶  обернем все в объект, который будет разрушаться
+// при выходе из текущей области видимости
+#include <memory>
+
+std::shared_ptr<int> x(new int);
+*x = 10;
+// delete не нужен, так как он делается в деструкторе, в остальном использовании такой же как обычный указатель
+// Если сделать два умных указателя на один обычный, то будет двойное удаление,
+// но при этом shared_ptr поддерживает копирование
+
+auto x = std::make_shared<int>(10);
+// Аналогично предыдущему, но не требует явного new. Лучше писать так
+
+int xCount = x.use_count();
+// Количество копий
