@@ -292,6 +292,26 @@ explicit operator int() {}
 // Question 11
 // https://habr.com/ru/post/266747/
 
+// Question 13
+template<int n>
+struct fibonacci {
+    static constexpr int value = fibonacci<n-1>::value + fibonacci<n-2>::value;
+};
+template<>
+struct fibonacci<0> {
+    static constexpr int value = 0;
+};
+template<>
+struct fibonacci<1> {
+    static constexpr int value = 1;
+};
+
+int main()
+{
+    fibonacci<40>::value;
+    return 0;
+}
+
 // Question 23
 // http://thbecker.net/articles/rvalue_references/section_03.html - лучше и не скажешь
 // quite good exapmle of different behavior
