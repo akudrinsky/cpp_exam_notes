@@ -46,3 +46,49 @@ int main () {
  (6.10) — The lifetime of a temporary bound to the returned value in a function return statement is not extended; the temporary is destroyed at the end of the full-expression in the return statement.
  */
 // Прикольный пример, подтверждающий, что "все работает только на той же инструкции": https://husl.ru/questions/731506
+
+// Question 3
+// Правило трех
+/*
+ Правило трёх (также известное как «Закон Большой Тройки» или «Большая Тройка») — правило в C++, гласящее, что если класс или структура определяет один из следующих методов, то они должны явным образом определить все три метода:
+ 
+ @ Деструктор
+ @ Конструктор копирования
+ @ Оператор присваивания копированием
+ */
+
+// Правило пяти
+/*
+ Вдобавок к уже названным:
+ @ Конструктор перемещения
+ @ Оператор присваивания перемещением
+ // перемещение - для тех объектов, которые больше не будут нужны (http://simpletechtalks.com/copy-constructor-vs-move-constructor/)
+ */
+
+// Initialization list - faster (see "explanation" in https://en.cppreference.com/w/cpp/language/constructor)
+// Also an example, where it is necessary
+#include <iostream>
+using namespace std;
+
+class Test {
+    int& t;
+public:
+    Test (int& t) : t(t) {}  // Initializer list must be used
+    int getT () { return t; }
+};
+
+int main() {
+    int x = 20;
+    Test t1 (x);
+    cout << t1.getT () << endl;
+    x = 30;
+    cout << t1.getT () << endl;
+    return 0;
+}
+/* OUTPUT:
+ 20
+ 30
+ */
+
+// Делегирующие конструкторы - те, что вызывают другие ради избежания copy-past
+// https://ravesli.com/urok-119-delegiruyushhie-konstruktory/

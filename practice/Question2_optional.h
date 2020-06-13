@@ -48,7 +48,7 @@ public:
     }
     
     constexpr optional& operator= (const operator& other) {
-        
+        //...
     }
     
     // to do: convert - assignment and maybe more
@@ -72,7 +72,7 @@ public:
     }
     
     /* 'is_correct' checks */
-    constexpr explicit operator bool() const noexcept {
+    constexpr explicit operator bool () const noexcept {
         return is_correct;
     }
     
