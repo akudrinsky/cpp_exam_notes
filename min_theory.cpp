@@ -436,7 +436,37 @@ f(932); // Ошибка!
 
 // Question 23
 // https://docs.google.com/spreadsheets/d/10OtSa0QdUp0HyKJIySKQAp_1U6CDkdY8G3jnKMlePgE/edit?usp=sharing
+        
 
+// Question 27
+int main() {
+    std::map<int, int> a;
+    a[2] = 3;
+    a[5] = 7;
+    a[10] = 2;
+            
+    for (auto it = a.begin (); it != a.end (); ++it)
+        std::cout << it->second << '\n';
+            
+    for (auto it : a)
+        std::cout << it.first << '\n';
+            
+            
+    std::vector<int> b;
+    b.push_back (2);
+    b.push_back (3);
+    b.push_back (7);
+            
+    for (auto it = b.begin (); it < b.end (); ++it)
+        std::cout << *it << '\n';
+            
+    for (auto it : b)
+        std::cout << it << '\n';
+            
+    return 0;
+}
+        
+    
 
 // Question 29
 // Мотивировка и грустные истории C++ 03
