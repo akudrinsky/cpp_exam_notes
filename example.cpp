@@ -22,22 +22,11 @@ void f (int& a) {
     std::cout << "lvalue " << a << '\n';
 }
 
-void f (const int& a) {
-    std::cout << "const lvalue " << a << '\n';
-}
-
-void f (int&& a) {
-    std::cout << "rvalue " << a << '\n';
-}
-
 int main() {
     int x = 0;
     
     f (0);
     f (x);
-    f (static_cast <const int&> (x));
-    f (static_cast <const int> (x));
-    f (std::move (x));
     
     return 0;
 }

@@ -316,6 +316,12 @@ int main() {
     return 0;
 }
 
+// Question 24 - смотри №23 и главу 5 Мейерса (эффективный и современный). Если нет ее - пиши Леше Кудринскому
+
+// Question 25
+// Кратко: https://habr.com/ru/post/441742/
+// Жестко: https://habr.com/ru/post/322132/
+
 
 // Question 29 (SFINAE и шаблонная магия)
 // https://en.cppreference.com/w/cpp/language/sfinae
