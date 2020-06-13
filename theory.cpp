@@ -286,6 +286,9 @@ class C {
 // которое разрешает только явно использовать это преобразование.
 explicit operator int() {}
 
+// Question 9
+// https://habr.com/ru/post/487920/#id-1-1
+
 // Question 23
 // http://thbecker.net/articles/rvalue_references/section_03.html - лучше и не скажешь
 // quite good exapmle of different behavior
