@@ -285,3 +285,6 @@ class C {
 // что не всегда хорошо, поэтому воизбежание этого появилось ключевое слово explicit,
 // которое разрешает только явно использовать это преобразование.
 explicit operator int() {}
+
+// Question 23
+// http://thbecker.net/articles/rvalue_references/section_03.html - лучше и не скажешь
