@@ -289,6 +289,9 @@ explicit operator int() {}
 // Question 9
 // https://habr.com/ru/post/487920/#id-1-1
 
+// Question 11
+// https://habr.com/ru/post/266747/
+
 // Question 23
 // http://thbecker.net/articles/rvalue_references/section_03.html - лучше и не скажешь
 // quite good exapmle of different behavior
