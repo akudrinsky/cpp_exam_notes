@@ -316,3 +316,92 @@ int main() {
     return 0;
 }
 
+
+// Question 29 (SFINAE и шаблонная магия)
+// https://en.cppreference.com/w/cpp/language/sfinae
+// "Substitution Failure Is Not An Error"!
+
+namespace Question29 {
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* Простой пример проявления принципа SFINAE */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+void f(int x) {
+    std::cout << "int: " << x << '\n'; 
+}
+
+// для double не ясно, что такое double::type
+// сигнатура функции не может быть определена
+template<typename T>
+typename T::type f(T) {            
+    std::cout << "template \n";    
+    return static_cast<typename T::type>(0); // каст не приводит к CE, т.к. тело  
+}                                            // функции даже не инстанцируется
+
+/*    template<typename T>
+ *    int f(T) {
+ *        typename T::type temp = 0; // привело бы к CE, т.к. сигнатура функции определена,
+ *        return 0;                  // и ошибка найдена на этапе инстанцирования тела функции
+ *    }
+ */
+
+void g() {
+    f(3.1415926); // Несмотря на то, что предпочтительна
+                  // шаблонная версия, вызовется специализация
+                  // с неявным приведением к int
+} // Ожидаемый вывод: "int: 3"
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* Пример нетривиальной проверки с помощью SFINAE */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+template<typename T>
+class is_default_constructible {
+
+    template<typename...>
+    static int check(...) { // -> int
+        return 0;
+    }// будет выбрано при отсутствии конструктора по-умолчанию
+
+    template<typename Type>
+    static decltype(Type(), char()) check(int) { // -> char
+       return 0; 
+    }// будет выбрано при наличии конструктора по-умолчанию
+    
+public:
+    // std::is_same содержится в type_traits
+    static const bool value = std::is_same<char, decltype(check<T>(0))>::value;
+};
+
+struct S {
+    S() = delete;
+};
+
+void test() {
+    std::cout << is_default_constructible<int>::value << ' '  <<
+                 is_default_constructible<S>::value   << '\n';
+} // Ожидаемый вывод: "1 0"
+
+/* Много других проверок можно найти в type_traits */
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/*              enable_if и enable_if_t               */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+// https://en.cppreference.com/w/cpp/types/enable_if
+
+/* реализация enable_if */
+template<bool B, class T = void>
+struct enable_if {};
+ 
+template<class T>
+struct enable_if<true, T> { typedef T type; };
+
+/* реализация enable_if_t */
+template< bool B, class T = void >
+using enable_if_t = typename enable_if<B,T>::type;
+
+// Примеры использования: 
+// https://riptutorial.com/ru/cplusplus/example/3777/enable-if
+
+}
