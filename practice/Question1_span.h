@@ -18,7 +18,7 @@ public:
     // Rule of three
     constexpr span            (const span &other) noexcept = default;
     constexpr span &operator= (const span &other) noexcept = default;
-             ~span            () noexcept                  = default;
+             ~span            ()                  noexcept = default;
 
     // Constructors
     span (TypeValue *pointer, int new_size) :
