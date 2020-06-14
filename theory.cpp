@@ -75,7 +75,6 @@ int main () {
 // Прикольный пример, подтверждающий, что "все работает только на той же инструкции": https://husl.ru/questions/731506
 
 
-
 // Question 3
 // Классы: https://www.tutorialspoint.com/cplusplus/cpp_classes_objects.htm
 
@@ -288,6 +287,48 @@ explicit operator int() {}
 
 // Question 9
 // https://habr.com/ru/post/487920/#id-1-1
+
+// Question 10
+#include <iostream>
+
+class BaseClass {
+    int a, b;
+    virtual void f() {}; // BaseClass полиморфный
+};
+
+class Derived1: public BaseClass {
+    int i, j;
+};
+
+class Derived2: public BaseClass {
+    int k;
+};
+
+int main () {
+    int i;
+    BaseClass* p, baseob;
+    Derived1 ob1;
+    Derived2 ob2;
+    
+    // сначала выводится имя встроенного типа
+    std::cout << "Typeid of i is ";
+    std::cout << typeid(i).name() << std::endl;
+    
+    // демонстрация typeid с полиморфными типами
+    p = &baseob;
+    std::cout << "p is pointing to an object of type ";
+    std::cout << typeid(*p).name() << std::endl;
+    
+    p = &ob1;
+    std::cout << "p is pointing to an object of type ";
+    std::cout << typeid(*p).name() << std::endl;
+    
+    p = &ob2;
+    std::cout << "p is pointing to an object of type ";
+    std::cout << typeid(*p).name() << std::endl;
+    return 0;
+}
+
 
 // Question 11
 // https://habr.com/ru/post/266747/
