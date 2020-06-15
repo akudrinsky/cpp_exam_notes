@@ -388,6 +388,7 @@ int main() {
 // Question 25
 // Кратко: https://habr.com/ru/post/441742/
 // Жестко: https://habr.com/ru/post/322132/
+// ref-qualifiers: https://habr.com/ru/post/216783/
 
 
 // Question 29 (SFINAE и шаблонная магия)
