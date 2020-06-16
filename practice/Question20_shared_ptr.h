@@ -2,6 +2,10 @@
 #define UNTITLED1_SHARED_PTR_H
 
 
+//  Релизация спустя время мне очень сильно не нравится
+//  Не рекомендуется к ознакомлению!!!!!!!!!!
+
+
 #include <cstdlib>
 #include <iostream>
 #include <utility>
