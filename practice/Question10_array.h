@@ -25,7 +25,7 @@ struct __array_traits<_Tp, 0> {
     struct _Type {};  // Stub for empty array
 
     static constexpr _Tp &getReference(const _Type &, std::size_t) noexcept {
-        return *const_cast<_Tp &>(nullptr);
+        return const_cast<_Tp &>(nullptr);
     }
 
     static constexpr _Tp *getPointer(const _Type &) noexcept {
