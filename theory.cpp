@@ -334,6 +334,97 @@ int main () {
 // https://habr.com/ru/post/266747/
 
 // Question 13
+// С помощью шаблонов можно определить
+// 1. Семейство классов (быть может, вложенных)
+// template<parameter-list> class-declaration
+
+// Например
+template<typename T>
+class Containter {}; 
+
+// Неявное инстанцирование шаблона -- будут скомпилированы две версии
+Container<int> c1; // Версия для int
+Container<double> c2; // Версия для double
+
+// Возможно явно инстанцировать шаблон:
+template class Container<char>; // Версия для char будет скомпилирована
+
+// 2. Семейство функций (быть может, функций-членов класса)
+// Вообще говоря, довольно аналогично классам и вообще говоря вы наверняка знаете это
+
+ // Явное инстанцирование шаблона функции
+template<typename T>
+T max (T a, T b) {
+    return a > b ? a : b;
+}
+
+template int max<int>(int, int); // Версия для int
+template double max(double, double); // Спасибо type deduction
+template char max<>(char, char); // Еще один deduction
+
+// 3. Семейство псевдонимов типов (C++11)
+template<typename T>
+struct Alloc {}; // Допустим, у нас есть кастомный аллокатор для шаблонного типа T
+
+template<typename T>
+using Vec = std::vector<T, Alloc<T>>; // Вектор с кастомным аллокатором
+
+Vec<int> v; // Вектор int с кастомным аллокатором
+
+// 4. Семейство переменных (C++14)
+// Скажем можем объявить константу числа pi, если тип поддерживает соответствующее преобразование
+template<typename T>
+constexpr T pi = T(3.1415926535897932385L);
+
+// Функция, вычисляющая длину окружности в произвольном типе T
+template<typename T>
+T circumference(T r) {
+    return 2 * pi<T> * r; // Используем соответствующую версию pi
+} 
+
+// 5. Концепт (C++20)
+// Не будем углубляться (для экзамена не требуется), но это весьма полезная вещь, которая позволяет наложить
+// ограничения на шаблонный параметр. Скажем, мы хотим сделать проверку, является ли тип линейно упорядоченным:
+template <typename T>
+concept LinearOrder = requires(T a, T b) {
+    {a <=> b} -> std::strong_ordering; // Тип должен поддерживать three-way-comparison
+}
+
+void f(const LinearOrder auto& arg); // Функция, принимающая константные ссылки на объекты, удовлетворяющие LinearOrder
+
+// Существуют частичные и полные специализации шаблонов. Полные специализации поддерживаются для шаблонов классов,
+// переменных и функций, а частичные -- только для шаблонов классов и переменных.
+
+// Параметрами шаблонов могут быть:
+// 1. Типы -- тип без значения по умолчанию, тип со значением по умолчанию, набор типов:
+template<typename T>
+class SomeStructure {};
+
+template<class T = void>
+class AnotherStructure {};
+
+template<class... T>
+class TupleLikeStructure {};
+
+// В контексте шаблонов typename и class эквивалентны. Вы можете выбрать что-то одно или придать им
+// семантику в рамках вашего проекта
+
+// 2. Параметры, не являющиеся типом -- могут быть как с, так и без значения по умолчанию, может быть набор
+// параметров, параметр с auto. При этом параметрами могут быть:
+// а) lvalue ссылки на объект или функцию
+// б) Встроенный тип
+// в) Указатель
+// г) Указатель на член класса
+// д) Перечисление
+// е) Параметр с плавающей запятой (C++20)
+
+// 3. Шаблонный параметр, являющийся шаблоном
+template<template<typename> typename ArrayLikeStructure, typename T>
+class Table {
+    ArrayLikeStructure<T> table;
+};
+
+// Compile-time вычисление чисел фибоначчи с помощью TMP
 template<int n>
 struct fibonacci {
     static constexpr int value = fibonacci<n-1>::value + fibonacci<n-2>::value;
@@ -352,6 +443,47 @@ int main()
     fibonacci<40>::value;
     return 0;
 }
+
+// remove_const
+template<typename T>
+struct remove_const {
+    typedef T type;
+};
+
+template<typename T>
+struct remove_const<const T> {
+    typedef T type;
+};
+
+// remove_reference
+template<typename T>
+struct remove_reference {
+    typedef T type;
+};
+
+template<typename T>
+struct remove_reference<T&> {
+    typedef T type;
+};
+
+template<typename T>
+struct remove_reference<T&&> {
+    typedef T type;
+};
+
+//is_same
+template<typename T, typename U>
+struct is_same {
+    static const bool value = false;
+};
+
+template<typename T>
+struct is_same<T, T> {
+    static const bool value = true;
+};
+
+// мне лень писать стек, вы справитесь
+
 
 // Question 23
 // http://thbecker.net/articles/rvalue_references/section_03.html - лучше и не скажешь
